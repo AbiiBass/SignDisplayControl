@@ -91,6 +91,19 @@
       transform: scale(0.95);
       filter: brightness(85%);
     }
+    .audio-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: unset;
+        flex: 0 0 auto;
+    }
+
     .displayA { background-color: #2196F3; }
     .displayB { background-color: #BA68C8; }
     .displayC { background-color: #4CAF50; }
@@ -193,13 +206,13 @@
     <div class="container">
       <div class="button-row">
         <button class="button displayA" onclick="publish('display', 'A')">Welcome 25</button>
-        <button class="button displayA" onclick="publish('audio', 'AudioA')"><span class="material-icons">volume_up</span> Welcome 25</button>
+        <button class="button displayA audio-button" onclick="publish('audio', 'AudioA')"><span class="material-icons">volume_up</span></button>
         <button class="button displayB" onclick="publish('display', 'B')">Prepare Tickets</button>
-        <button class="button displayB" onclick="publish('audio', 'AudioB')"><span class="material-icons">volume_up</span> Prepare Tickets</button>
+        <button class="button displayB audio-button" onclick="publish('audio', 'AudioB')"><span class="material-icons">volume_up</span></button>
         <button class="button displayC" onclick="publish('display', 'C')">Security Check</button>
-        <button class="button displayC" onclick="publish('audio', 'AudioC')"><span class="material-icons">volume_up</span> Security Check</button>
+        <button class="button displayC audio-button" onclick="publish('audio', 'AudioC')"><span class="material-icons">volume_up</span></button>
         <button class="button displayD" onclick="publish('display', 'D')">DISPLAY D</button>
-        <button class="button displayD" onclick="publish('audio', 'AudioD')"><span class="material-icons">volume_up</span> AUDIO D</button>
+        <button class="button displayD audio-button" onclick="publish('audio', 'AudioD')"><span class="material-icons">volume_up</span></button>
       </div>
 
       <div class="card text-input">
