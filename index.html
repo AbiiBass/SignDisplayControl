@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MQTT Dashboard</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+    .hidden { display: none; }
+
+    #home {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      background-color: #121212;
+      z-index: 10;
+    }
+    .home-button {
+      width: 80%;
+      padding: 20px;
+      font-size: 24px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #1f1f1f;
+      padding: 10px 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .material-icons {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .back-button {
+      font-size: 20px;
+      color: white;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .container {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .button {
+      flex: 1 1 45%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.1s, background-color 0.3s;
+    }
+    .button:active {
+      transform: scale(0.95);
+      filter: brightness(85%);
+    }
+    .displayA { background-color: #2196F3; }
+    .displayB { background-color: #BA68C8; }
+    .displayC { background-color: #4CAF50; }
+    .displayD { background-color: #FFC107; color: black; }
+    .card {
+      background-color: #1f1f1f;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .status-bar {
+      width: 100%;
+      background-color: #333;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .status-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, lime, green);
+      transition: width 0.5s ease;
+    }
+    .text-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #2c2c2c;
+      color: white;
+    }
+    .send-button, .erase-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #2196F3;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .erase-button {
+      background-color: #f44336;
+      align-self: flex-end;
+    }
+    .fan-icon {
+      font-size: 40px;
+      animation: none;
+      transition: transform 0.2s ease-in-out;
+    }
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .status-icon-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .status-icon-label i {
+      font-size: 24px;
+      transition: color 0.3s;
+    }
+    .highlight-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .fan-status-text {
+      font-size: 18px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="home">
+    <button class="home-button" onclick="selectDevice('dog1')">Dog 1</button>
+    <button class="home-button" onclick="selectDevice('dog2')">Dog 2</button>
+    <button class="home-button" onclick="selectDevice('dog3')">Dog 3</button>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <header>
+      <button class="back-button" onclick="goBack()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <h1 id="device-title">Dashboard</h1>
+      <span class="material-icons" style="color: orange">task_alt</span>
+    </header>
+    <div class="container">
+      <div class="button-row">
+        <button class="button displayA" onclick="publish('display', 'A')">Welcome 25</button>
+        <button class="button displayA" onclick="publish('audio', 'AudioA')"><span class="material-icons">volume_up</span> Welcome 25</button>
+        <button class="button displayB" onclick="publish('display', 'B')">Prepare Tickets</button>
+        <button class="button displayB" onclick="publish('audio', 'AudioB')"><span class="material-icons">volume_up</span> Prepare Tickets</button>
+        <button class="button displayC" onclick="publish('display', 'C')">Security Check</button>
+        <button class="button displayC" onclick="publish('audio', 'AudioC')"><span class="material-icons">volume_up</span> Security Check</button>
+        <button class="button displayD" onclick="publish('display', 'D')">DISPLAY D</button>
+        <button class="button displayD" onclick="publish('audio', 'AudioD')"><span class="material-icons">volume_up</span> AUDIO D</button>
+      </div>
+
+      <div class="card text-input">
+        <input id="textMessage" type="text" placeholder="Send Message" />
+        <button class="send-button" onclick="sendMessage()">
+          <span class="material-icons">send</span>
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="status-icon-label">
+          <i class="material-icons" id="battery-icon">battery_full</i>
+          <span>Battery Status</span>
+        </div>
+        <p class="highlight-value" id="battery-value">0%</p>
+        <div class="status-bar"><div id="battery-fill" class="status-fill"></div></div>
+      </div>
+
+      <button class="erase-button" onclick="publish('ClearScreen', '1')">
+        <span class="material-icons">clear</span>
+      </button>
+
+      <div class="card">
+        <div class="status-icon-label">
+          <i class="material-icons" id="temp-icon">thermostat</i>
+          <span>Temperature</span>
+        </div>
+        <p class="highlight-value" id="temperature">0°C</p>
+      </div>
+
+      <div class="card">
+        <p>Fan</p>
+        <span id="fan" class="material-icons-outlined fan-icon">air</span>
+        <p class="fan-status-text" id="fan-status">Fan OFF</p>
+        <p>RPM: <span id="fan-rpm">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    let selectedDevice = '';
+    let subscribedTopics = [];
+
+    function selectDevice(dog) {
+      // Unsubscribe from previous topics
+      if (subscribedTopics.length > 0) {
+        client.unsubscribe(subscribedTopics);
+      }
+
+      // Reset UI elements for new device
+      document.getElementById('battery-value').textContent = '0%';
+      document.getElementById('battery-fill').style.width = '0%';
+      document.getElementById('battery-icon').style.color = 'white';
+
+      document.getElementById('temperature').textContent = '0°C';
+      document.getElementById('temperature').style.color = 'white';
+      document.getElementById('temp-icon').style.color = 'white';
+
+      document.getElementById('fan-status').textContent = 'Fan OFF';
+      document.getElementById('fan').classList.remove('spinning');
+      document.getElementById('fan-rpm').textContent = '0';
+
+      selectedDevice = dog;
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('device-title').textContent = `Dashboard - ${dog.toUpperCase()}`;
+
+      subscribedTopics = [
+        `battery_${dog}`,
+        `temp_${dog}`,
+        `fan_${dog}`,
+        `fanspeed_${dog}`,
+        `NewMessage_${dog}`
+      ];
+
+      client.subscribe(subscribedTopics);
+    }
+
+    function goBack() {
+      // Unsubscribe from current device topics when going back
+      if (subscribedTopics.length > 0) {
+        client.unsubscribe(subscribedTopics);
+        subscribedTopics = [];
+      }
+      selectedDevice = '';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('home').style.display = 'flex';
+    }
+
+    function publish(topic, message) {
+      if (!selectedDevice) return;
+      const finalMessage = `${message}_${selectedDevice}`;
+      client.publish(topic, finalMessage);
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById('textMessage').value;
+      if (msg.trim() !== '') {
+        publish('NewMessage', msg);
+        document.getElementById('textMessage').value = '';
+      }
+    }
+
+    client.on('message', (topic, message) => {
+      const payload = message.toString();
+      if (!selectedDevice || !topic.endsWith(`_${selectedDevice}`)) return;
+
+      if (topic.startsWith('battery')) {
+        const percent = parseFloat(payload);
+        document.getElementById('battery-value').textContent = `${percent.toFixed(1)}%`;
+        const fill = document.getElementById('battery-fill');
+        const icon = document.getElementById('battery-icon');
+        fill.style.width = `${percent}%`;
+
+        if (percent >= 75) {
+          fill.style.background = 'linear-gradient(to right, #00e676, #1b5e20)';
+          icon.style.color = '#00e676';
+        } else if (percent >= 50) {
+          fill.style.background = 'linear-gradient(to right, #ffeb3b, #fbc02d)';
+          icon.style.color = '#ffeb3b';
+        } else {
+          fill.style.background = 'linear-gradient(to right, #f44336, #b71c1c)';
+          icon.style.color = '#f44336';
+        }
+      }
+
+      if (topic.startsWith('temp')) {
+        const temp = parseFloat(payload);
+        const tempElement = document.getElementById('temperature');
+        const tempIcon = document.getElementById('temp-icon');
+        tempElement.textContent = `${temp.toFixed(1)}°C`;
+
+        if (temp >= 60) {
+          tempElement.style.color = 'red';
+          tempIcon.style.color = 'red';
+        } else if (temp >= 50) {
+          tempElement.style.color = 'yellow';
+          tempIcon.style.color = 'yellow';
+        } else {
+          tempElement.style.color = 'lightgreen';
+          tempIcon.style.color = 'lightgreen';
+        }
+      }
+
+      if (topic.startsWith('fan_')) {
+        console.log("Fan topic message:", payload);
+        document.getElementById('fan-status').textContent = payload === '1' ? 'Fan ON' : 'Fan OFF';
+      }
+
+      if (topic.startsWith('fanspeed')) {
+        const rpm = parseInt(payload);
+        document.getElementById('fan-rpm').textContent = rpm;
+        const fan = document.getElementById('fan');
+        if (rpm > 0) {
+          fan.classList.add('spinning');  
+          const duration = Math.max(0.2, 60 / rpm);
+          fan.style.animationDuration = `${duration}s`;
+        } else {
+          fan.classList.remove('spinning');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
