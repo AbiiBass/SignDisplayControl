@@ -74,7 +74,7 @@
       gap: 10px;
     }
     .button {
-      flex: 1 1 45%;
+      flex: 1 1 30%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,16 +92,28 @@
       filter: brightness(85%);
     }
     .audio-button {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        padding: 0;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: unset;
-        flex: 0 0 auto;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      padding: 0;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: unset;
+      flex: 0 0 auto;
+    }
+
+    .dark-button {
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.7);
+      color: #121212;
+      /* filter: brightness(0.3); */
+      border-radius: 30%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: unset;
+      flex: 0 0 auto;
     }
 
     .displayA { background-color: #2196F3; }
@@ -205,13 +217,24 @@
     </header>
     <div class="container">
       <div class="button-row">
-        <button class="button displayA" onclick="publish('display', 'A')">Welcome 25</button>
+        <!-- A -->
+        <button class="button displayA" onclick="publish('display', 'A_light')">Welcome to NDP</button>
+        <button class="button displayA dark-button" onclick="publish('display', 'A_dark')">Dark Mode</button>
         <button class="button displayA audio-button" onclick="publish('audio', 'AudioA')"><span class="material-icons">volume_up</span></button>
-        <button class="button displayB" onclick="publish('display', 'B')">Prepare Tickets</button>
+
+        <!-- B -->
+        <button class="button displayB" onclick="publish('display', 'B_light')">Get Tickets Ready</button>
+        <button class="button displayB dark-button" onclick="publish('display', 'B_dark')">Dark Mode</button>
         <button class="button displayB audio-button" onclick="publish('audio', 'AudioB')"><span class="material-icons">volume_up</span></button>
-        <button class="button displayC" onclick="publish('display', 'C')">Security Check</button>
+
+        <!-- C -->
+        <button class="button displayC" onclick="publish('display', 'C_light')">Security Ahead</button>
+        <button class="button displayC dark-button" onclick="publish('display', 'C_dark')">Dark Mode</button>
         <button class="button displayC audio-button" onclick="publish('audio', 'AudioC')"><span class="material-icons">volume_up</span></button>
-        <button class="button displayD" onclick="publish('display', 'D')">DISPLAY D</button>
+
+        <!-- D -->
+        <button class="button displayD" onclick="publish('display', 'D_light')">DisplayD Light</button>
+        <button class="button displayD dark-button" onclick="publish('display', 'D_dark')">Dark Mode</button>
         <button class="button displayD audio-button" onclick="publish('audio', 'AudioD')"><span class="material-icons">volume_up</span></button>
       </div>
 
@@ -259,12 +282,10 @@
     let subscribedTopics = [];
 
     function selectDevice(dog) {
-      // Unsubscribe from previous topics
       if (subscribedTopics.length > 0) {
         client.unsubscribe(subscribedTopics);
       }
 
-      // Reset UI elements for new device
       document.getElementById('battery-value').textContent = '0%';
       document.getElementById('battery-fill').style.width = '0%';
       document.getElementById('battery-icon').style.color = 'white';
@@ -294,7 +315,6 @@
     }
 
     function goBack() {
-      // Unsubscribe from current device topics when going back
       if (subscribedTopics.length > 0) {
         client.unsubscribe(subscribedTopics);
         subscribedTopics = [];
@@ -360,7 +380,6 @@
       }
 
       if (topic.startsWith('fan_')) {
-        console.log("Fan topic message:", payload);
         document.getElementById('fan-status').textContent = payload === '1' ? 'Fan ON' : 'Fan OFF';
       }
 
