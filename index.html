@@ -343,7 +343,8 @@
       if (!selectedDevice || !topic.endsWith(`_${selectedDevice}`)) return;
 
       if (topic.startsWith('battery')) {
-        const percent = parseFloat(payload) + 10;
+        let percent = parseFloat(payload) + 10;
+        percent = percent-((percent%100)*(percent>100));
         document.getElementById('battery-value').textContent = `${percent.toFixed(1)}%`;
         const fill = document.getElementById('battery-fill');
         const icon = document.getElementById('battery-icon');
