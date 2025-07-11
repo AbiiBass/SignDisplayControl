@@ -205,6 +205,7 @@
     <button class="home-button" onclick="selectDevice('dog1')">Dog 1</button>
     <button class="home-button" onclick="selectDevice('dog2')">Dog 2</button>
     <button class="home-button" onclick="selectDevice('dog3')">Dog 3</button>
+    <button class="home-button" onclick="openPhoneAudio()">My Phone</button>
   </div>
 
   <div id="dashboard" class="hidden">
@@ -233,9 +234,11 @@
         <button class="button displayC audio-button" onclick="publish('audio', 'AudioC')"><span class="material-icons">volume_up</span></button>
 
         <!-- D -->
-        <button class="button displayD" onclick="publish('display', 'D_light')">DisplayD Light</button>
+        <button class="button displayD" onclick="publish('display', 'D_light')">Stay Hydrated</button>
         <button class="button displayD dark-button" onclick="publish('display', 'D_dark')">Dark Mode</button>
         <button class="button displayD audio-button" onclick="publish('audio', 'AudioD')"><span class="material-icons">volume_up</span></button>
+        
+        <button class="button displayE" onclick="publish('audio', 'AudioE')" style="color: black;"><span class="material-icons">volume_off</span></button>
       </div>
 
       <div class="card text-input">
@@ -271,6 +274,25 @@
         <span id="fan" class="material-icons-outlined fan-icon">air</span>
         <p class="fan-status-text" id="fan-status">Fan OFF</p>
         <p>RPM: <span id="fan-rpm">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- New My Phone Audio Section -->
+  <div id="phone-audio" class="hidden">
+    <header>
+      <button class="back-button" onclick="closePhoneAudio()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <h1>Audio Playback</h1>
+    </header>
+    <div class="container">
+      <div class="button-row" style="flex-direction: column;">
+        <button class="button" style="font-size: 18px; background-color: #2196F3; color:Black" onclick="playAudioLoop('audioA.mp3')">Welcome 25</button>
+        <button class="button" style="font-size: 18px; background-color: #BA68C8; color:Black" onclick="playAudioLoop('audioB.mp3')">Prepare Tickets</button>
+        <button class="button" style="font-size: 18px; background-color: #4CAF50; color:Black" onclick="playAudioLoop('audioC.mp3')">Security Checks</button>
+        <button class="button" style="font-size: 18px; background-color: #FFC107; color:Black" onclick="playAudioLoop('audioD.mp3')">Hydrate Reminder</button>
+        <button class="button" style="font-size: 18px; color:Black" onclick="playAudioLoop('audioE.mp3')">Mute</button>
       </div>
     </div>
   </div>
@@ -343,8 +365,12 @@
       if (!selectedDevice || !topic.endsWith(`_${selectedDevice}`)) return;
 
       if (topic.startsWith('battery')) {
-        let percent = parseFloat(payload) + 10;
+        let percent = parseFloat(payload);
+        // let percent = parseFloat(payload) + 10;
+        
+        percent = (percent-30)*(10/6);
         percent = percent-((percent%100)*(percent>100));
+
         document.getElementById('battery-value').textContent = `${percent.toFixed(1)}%`;
         const fill = document.getElementById('battery-fill');
         const icon = document.getElementById('battery-icon');
@@ -397,6 +423,41 @@
         }
       }
     });
+
+    // --- My Phone Audio playback logic ---
+
+    let audioLoop = null;
+    let currentAudio = null;
+
+    function openPhoneAudio() {
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('phone-audio').classList.remove('hidden');
+    }
+
+    function closePhoneAudio() {
+      stopAudioLoop();
+      document.getElementById('phone-audio').classList.add('hidden');
+      document.getElementById('home').style.display = 'flex';
+    }
+
+    function playAudioLoop(filename) {
+      stopAudioLoop();
+      currentAudio = new Audio(filename);
+      currentAudio.play();
+      audioLoop = setInterval(() => {
+        currentAudio.currentTime = 0;
+        currentAudio.play();
+      }, 10000);
+    }
+
+    function stopAudioLoop() {
+      if (audioLoop) clearInterval(audioLoop);
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    }
   </script>
 </body>
 </html>
