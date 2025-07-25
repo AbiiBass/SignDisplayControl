@@ -107,7 +107,6 @@
     .dark-button {
       box-shadow: inset 0 0 10px rgba(0,0,0,0.7);
       color: #121212;
-      /* filter: brightness(0.3); */
       border-radius: 30%;
       display: flex;
       align-items: center;
@@ -198,6 +197,19 @@
       margin-top: 10px;
       font-weight: bold;
     }
+    /* Additional styling for speak button */
+    .speak-button {
+      background-color: #2196F3;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
   </style>
 </head>
 <body>
@@ -287,7 +299,7 @@
     </div>
   </div>
 
-  <!-- New My Phone Audio Section -->
+  <!-- My Phone Audio Section -->
   <div id="phone-audio" class="hidden">
     <header>
       <button class="back-button" onclick="closePhoneAudio()">
@@ -305,7 +317,13 @@
         <button class="button" style="font-size: 18px; background-color: #5f436e; color:white" onclick="playAudioLoop('audio/AudioF.mp3')">My name is Victor</button>
         <button class="button" style="font-size: 18px; background-color: #5f436e; color:white" onclick="playAudioLoop('audio/AudioG.mp3')">Who is excited?</button>
         <button class="button" style="font-size: 18px; color:Black" onclick="playAudioLoop('audio/AudioI.MP3')">Everything</button>
-        <button class="button" style="font-size: 18px; color:Black" onclick="playAudioLoop('audio/AudioH.mp3')">Mute</button>
+        <button class="button" style="font-size: 18px; color:Black" onclick="stopAudioLoop()">Mute</button>
+      </div>
+      <div class="text-input" style="margin-top: 20px;">
+        <input type="text" id="customText" placeholder="Enter custom text to speak" />
+        <button class="speak-button" onclick="speakCustomText()" title="Speak">
+          <span class="material-icons">volume_up</span>
+        </button>
       </div>
     </div>
   </div>
@@ -419,57 +437,76 @@
         }
       }
 
-      if (topic.startsWith('fan_')) {
-        document.getElementById('fan-status').textContent = payload === '1' ? 'Fan ON' : 'Fan OFF';
+      if (topic.startsWith('fan')) {
+        if (payload.toLowerCase() === 'on') {
+          document.getElementById('fan').classList.add('spinning');
+          document.getElementById('fan-status').textContent = 'Fan ON';
+        } else {
+          document.getElementById('fan').classList.remove('spinning');
+          document.getElementById('fan-status').textContent = 'Fan OFF';
+        }
       }
 
       if (topic.startsWith('fanspeed')) {
-        const rpm = parseInt(payload);
-        document.getElementById('fan-rpm').textContent = rpm;
-        const fan = document.getElementById('fan');
-        if (rpm > 0) {
-          fan.classList.add('spinning');  
-          const duration = Math.max(0.2, 60 / rpm);
-          fan.style.animationDuration = `${duration}s`;
-        } else {
-          fan.classList.remove('spinning');
-        }
+        document.getElementById('fan-rpm').textContent = payload;
+      }
+
+      if (topic.startsWith('NewMessage')) {
+        // Show message if you want
+        console.log(`New message for ${selectedDevice}: ${payload}`);
       }
     });
 
-    // --- My Phone Audio playback logic ---
-
-    let audioLoop = null;
-    let currentAudio = null;
-
+    // My Phone Audio Section Show/Hide
     function openPhoneAudio() {
       document.getElementById('home').style.display = 'none';
-      document.getElementById('dashboard').classList.add('hidden');
-      document.getElementById('phone-audio').classList.remove('hidden');
+      document.getElementById('phone-audio').style.display = 'block';
     }
-
     function closePhoneAudio() {
       stopAudioLoop();
-      document.getElementById('phone-audio').classList.add('hidden');
+      document.getElementById('phone-audio').style.display = 'none';
       document.getElementById('home').style.display = 'flex';
     }
 
-    function playAudioLoop(filename) {
+    // Audio player for looping playback
+    let audioPlayer = new Audio();
+    let audioLoopInterval = null;
+
+    function playAudioLoop(src) {
       stopAudioLoop();
-      currentAudio = new Audio(filename);
-      currentAudio.play();
-      audioLoop = setInterval(() => {
-        currentAudio.currentTime = 0;
-        currentAudio.play();
-      }, 10000);
+
+      audioPlayer.src = src;
+      audioPlayer.loop = false;
+      audioPlayer.play();
+
+      // Loop workaround: restart audio every ~duration
+      // Adjust this timing to your actual audio clip length for smooth looping
+      audioLoopInterval = setInterval(() => {
+        audioPlayer.currentTime = 0;
+        audioPlayer.play();
+      }, 9000);
     }
 
     function stopAudioLoop() {
-      if (audioLoop) clearInterval(audioLoop);
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+      if (audioLoopInterval) {
+        clearInterval(audioLoopInterval);
+        audioLoopInterval = null;
       }
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      window.speechSynthesis.cancel();
+    }
+
+    // Text-to-speech for custom input text
+    function speakCustomText() {
+      const input = document.getElementById('customText').value.trim();
+      if (!input) return;
+
+      stopAudioLoop();
+
+      const utterance = new SpeechSynthesisUtterance(input);
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
     }
   </script>
 </body>
